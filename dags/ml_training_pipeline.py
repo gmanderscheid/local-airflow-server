@@ -152,7 +152,7 @@ with DAG(
         config={
             "InstanceType": INSTANCE_TYPE,
             "KeyName": KEY_PAIR_NAME,
-            "SecurityGroupIds": [SECURITY_GROUP_ID] if SECURITY_GROUP_ID else [],
+            "SecurityGroupIds": ["sg-068d40b57787f3df9"],
             "UserData": base64.b64encode(USER_DATA_SCRIPT.encode("ascii")).decode("ascii"),
             "TagSpecifications": [{'ResourceType': 'instance', 'Tags': [{'Key': 'Name', 'Value': 'Airflow-Trainer'}]}]
         },
