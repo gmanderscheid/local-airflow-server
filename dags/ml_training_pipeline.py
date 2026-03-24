@@ -264,16 +264,31 @@ with DAG(
             for line in iter(stdout.readline, ""):
                 print(line, end="")
             
-            if stdout.channel.recv_exit_status() != 0:
-                print("\n❌ REMOTE SCRIPT FAILED. LOGS FROM USER_DATA:")
-                # Dump the setup log to see why pip failed
-                _, log_out, _ = ssh.exec_command("cat /var/log/user-data.log")
-                print(log_out.read().decode())
-                
-                print("\n❌ STDERR:")
-                print(stderr.read().decode())
-                raise Exception("Training Failed")
-                
+            exit_code = stdout.channel.recv_exit_status()
+            if exit_code != 0:
+                # Read all output before raising
+                remote_stdout = stdout.read().decode(errors="replace")
+                remote_stderr = stderr.read().decode(errors="replace")
+
+                print("\n❌ REMOTE SCRIPT FAILED (exit code:", exit_code, ")")
+
+                print("\n🔍 REMOTE STDOUT:")
+                print(remote_stdout)
+
+                print("\n🔍 REMOTE STDERR:")
+                print(remote_stderr)
+
+                print("\n🔍 USER DATA LOG (/var/log/user-data.log):")
+                _, log_out, _ = ssh.exec_command("cat /var/log/user-data.log || echo 'No user-data log found'")
+                print(log_out.read().decode(errors="replace"))
+
+                # Propagate full context into the Airflow exception
+                raise Exception(
+                    f"Training Failed (exit_code={exit_code}). "
+                    f"STDERR: {remote_stderr[:2000]}"  # truncate to avoid huge logs
+                )
+
+                            
         finally:
             ssh.close()
     # ------------------------------------------------------------------
