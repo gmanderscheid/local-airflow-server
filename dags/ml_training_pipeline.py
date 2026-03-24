@@ -249,8 +249,6 @@ with DAG(
                 export AWS_SECRET_ACCESS_KEY={AWS_SECRET_ACCESS_KEY}
                 export AWS_DEFAULT_REGION={REGION_NAME}
                 
-                pip install --upgrade --force-reinstall "mlflow>=2.0"
-
                 echo "🔍 VERIFYING MLFLOW INSTALLATION:"
                 which mlflow
                 
